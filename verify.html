@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linko – Verifikacija e-maila</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f4f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .kartica {
+            background: #fff;
+            padding: 2.5rem 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 16px rgba(0,0,0,.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .ikona { font-size: 4rem; margin-bottom: 1rem; }
+
+        h2 { font-size: 1.4rem; margin-bottom: .75rem; }
+
+        p { color: #555; line-height: 1.6; font-size: .95rem; margin-bottom: 1.5rem; }
+
+        .btn {
+            display: inline-block;
+            padding: .7rem 1.5rem;
+            background: #1F5C99;
+            color: #fff;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 1rem;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn:hover { background: #174d82; }
+
+        .badge {
+            display: inline-block;
+            padding: .2rem .6rem;
+            border-radius: 12px;
+            font-size: .8rem;
+            font-weight: bold;
+            margin-left: .4rem;
+        }
+
+        .badge-erasmus { background: #d6eaf8; color: #1F5C99; }
+        .badge-redovni { background: #d5f5e3; color: #1e8449; }
+    </style>
+</head>
+<body>
+<div class="kartica" id="kartica">
+    <!-- Sadržaj se puni JavaScriptom -->
+    <div class="ikona">⏳</div>
+    <h2 style="color:#555">Provjera linka...</h2>
+</div>
+
+<script>
+    function getParam(naziv) {
+        return new URLSearchParams(window.location.search).get(naziv);
+    }
+
+    function renderUspjeh(korisnik) {
+        const badge = korisnik.tip === 'erasmus'
+            ? '<span class="badge badge-erasmus">🌍 Erasmus</span>'
+            : '<span class="badge badge-redovni">🎓 Redovni</span>';
+
+        document.getElementById('kartica').innerHTML = `
+            <div class="ikona">✅</div>
+            <h2 style="color:#1e8449">E-mail potvrđen!</h2>
+            <p>
+                Dobrodošao/la, <strong>${korisnik.email}</strong>${badge}<br><br>
+                Tvoj studentski e-mail je uspješno verificiran.
+                Možeš se prijaviti i koristiti Linko.
+            </p>
+            <a href="profile.html" class="btn">Postavi profil →</a>
+        `;
+    }
+
+    function renderVecVerificiran() {
+        document.getElementById('kartica').innerHTML = `
+            <div class="ikona">ℹ️</div>
+            <h2 style="color:#1F5C99">Već verificirano</h2>
+            <p>Ovaj e-mail je već potvrđen. Možeš se normalno prijaviti.</p>
+            <a href="login.html" class="btn">Prijavi se</a>
+        `;
+    }
+
+    function renderGreska() {
+        document.getElementById('kartica').innerHTML = `
+            <div class="ikona">❌</div>
+            <h2 style="color:#c0392b">Nevažeći link</h2>
+            <p>Verifikacijski link nije ispravan ili je istekao.<br>Pokušaj se registrirati ponovno.</p>
+            <a href="register.html" class="btn">Natrag na registraciju</a>
+        `;
+    }
+
+    // Provjera tokena
+    const token = getParam('token');
+
+    if (!token) {
+        renderGreska();
+    } else {
+        const korisnici = JSON.parse(localStorage.getItem('linko_korisnici') || '[]');
+        const idx = korisnici.findIndex(k => k.token === token);
+
+        if (idx === -1) {
+            renderGreska();
+        } else if (korisnici[idx].verificiran) {
+            renderVecVerificiran();
+        } else {
+            // Označi kao verificiranog
+            korisnici[idx].verificiran = true;
+            korisnici[idx].token = null;
+            localStorage.setItem('linko_korisnici', JSON.stringify(korisnici));
+
+            // Postavi kao prijavljenog
+            localStorage.setItem('linko_prijavljeni', JSON.stringify({
+                id: korisnici[idx].id,
+                email: korisnici[idx].email,
+                tip: korisnici[idx].tip
+            }));
+
+            renderUspjeh(korisnici[idx]);
+        }
+    }
+</script>
+</body>
+</html>
