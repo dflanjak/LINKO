@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Linko – T5 Algoritam preporuka</title>
+<!-- T5 – DEMO. Demo podaci su u ovoj datoteci, algoritam je u T5.js (ista mapa). -->
+<style>
+  :root { --bg:#f5f6fb; --surface:#fff; --ink:#1d2333; --muted:#6b7280; --line:#e6e8f0;
+    --primary:#4f46e5; --primary-2:#7c6cf0; --accent:#f59e0b; --good:#16a34a; --chip:#eef0fb; --err:#dc2626; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+    background:var(--bg); color:var(--ink); line-height:1.45; }
+  .wrap { max-width:980px; margin:0 auto; padding:24px 16px 64px; }
+  header.app { display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; margin-bottom:4px; }
+  header.app .logo { font-size:28px; font-weight:800; letter-spacing:-.5px;
+    background:linear-gradient(90deg,var(--primary),var(--primary-2));
+    -webkit-background-clip:text; background-clip:text; color:transparent; }
+  header.app .screen { color:var(--muted); font-size:14px; }
+  .subtitle { color:var(--muted); font-size:14px; margin:0 0 20px; }
+  .me { display:flex; gap:14px; align-items:center;
+    background:linear-gradient(120deg,#eef0ff,#f7f5ff); border:1px solid var(--line);
+    border-radius:14px; padding:14px 16px; margin-bottom:18px; }
+  .me .ava { width:48px; height:48px; border-radius:50%; flex:0 0 48px; display:grid;
+    place-items:center; font-weight:700; color:#fff; background:var(--primary); }
+  .me .info b { font-size:15px; } .me .info span { color:var(--muted); font-size:13px; }
+  .filters { background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px; margin-bottom:20px; }
+  .filters h2 { font-size:13px; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); margin:0 0 12px; }
+  .frow { display:flex; flex-wrap:wrap; gap:18px; align-items:flex-end; }
+  .field label { display:block; font-size:12px; color:var(--muted); margin-bottom:5px; }
+  select { padding:8px 10px; border:1px solid var(--line); border-radius:9px; background:#fff; color:var(--ink); min-width:170px; font:inherit; }
+  input[type=range] { font:inherit; }
+  .dist output { font-weight:600; color:var(--primary); }
+  .chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:4px; }
+  .chip { border:1px solid var(--line); background:var(--chip); color:var(--ink); padding:6px 11px; border-radius:999px; font-size:13px; cursor:pointer; user-select:none; }
+  .chip[aria-pressed="true"] { background:var(--primary); color:#fff; border-color:var(--primary); }
+  .count { font-size:13px; color:var(--muted); margin:4px 0 14px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:14px; }
+  .card { background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px; position:relative; transition:transform .12s ease, box-shadow .12s ease; }
+  .card:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(31,40,80,.08); }
+  .card .top { display:flex; gap:12px; align-items:center; }
+  .card .ava { width:44px; height:44px; border-radius:50%; flex:0 0 44px; display:grid; place-items:center; font-weight:700; color:#fff; }
+  .card .name { font-weight:700; } .card .meta { font-size:13px; color:var(--muted); }
+  .badge { position:absolute; top:12px; right:12px; background:var(--accent); color:#3a2700; font-size:11px; font-weight:700; padding:3px 8px; border-radius:999px; }
+  .match { margin:12px 0 8px; }
+  .match .bar { height:8px; background:#eceefb; border-radius:999px; overflow:hidden; }
+  .match .bar i { display:block; height:100%; background:linear-gradient(90deg,var(--primary),var(--primary-2)); }
+  .match .pct { font-size:13px; color:var(--muted); margin-top:4px; } .match .pct b { color:var(--ink); }
+  .shared { display:flex; flex-wrap:wrap; gap:6px; margin:8px 0 12px; }
+  .shared span { font-size:12px; background:var(--chip); border-radius:999px; padding:3px 9px; }
+  .shared span.hit { background:#e4f7ea; color:var(--good); }
+  .btn { width:100%; border:0; border-radius:10px; padding:9px; background:var(--primary); color:#fff; font:inherit; font-weight:600; cursor:pointer; }
+  .btn:hover { background:#4338ca; }
+  .empty, .alert { color:var(--muted); padding:30px; text-align:center; border:1px dashed var(--line); border-radius:14px; }
+  .alert { color:var(--err); background:#fff1f1; border:1px solid #fecaca; text-align:left; }
+  footer.note { margin-top:28px; font-size:12px; color:var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="app">
+    <span class="logo">Linko</span>
+    <span class="screen">T5 &middot; Algoritam preporuka</span>
+  </header>
+  <p class="subtitle">Preporuke studenata na temelju interesa, smjera i blizine (R004, R013).</p>
+
+  <div class="me" id="meBox"></div>
+
+  <section class="filters">
+    <h2>Filteri</h2>
+    <div class="frow">
+      <div class="field">
+        <label for="smjerSel">Studijski smjer</label>
+        <select id="smjerSel"><option value="">Svi smjerovi</option></select>
+      </div>
+      <div class="field dist">
+        <label for="distRange">Najveća udaljenost: <output id="distOut">10</output> km</label>
+        <input type="range" id="distRange" min="1" max="25" value="10" />
+      </div>
+    </div>
+    <div class="field" style="margin-top:14px;">
+      <label>Interesi koji me zanimaju (klikni za uključi/isključi)</label>
+      <div class="chips" id="interestChips"></div>
+    </div>
+  </section>
+
+  <p class="count" id="count"></p>
+  <div class="grid" id="grid"></div>
+  <footer class="note">T5 (T5.js) &middot; demo podaci u T5.html &middot; Linko &middot; PRPP 2025./2026.</footer>
+</div>
+
+<!-- DEMO PODACI (u punoj aplikaciji dolaze iz T2) -->
+<script>
+  const currentUser = {
+    id: 0, ime: "Lucas Fernández", smjer: "Arhitektura", godina: 3, erasmus: true,
+    interesi: ["dizajn", "fotografija", "urbani prostori", "film"],
+    lokacija: { lat: 45.8131, lng: 15.9775 }
+  };
+  const students = [
+    { id:1, ime:"Marko Horvat",  smjer:"Arhitektura", godina:3, erasmus:false, interesi:["dizajn","urbani prostori","košarka","fotografija"], lokacija:{lat:45.8090,lng:15.9700} },
+    { id:2, ime:"Ana Kovač",     smjer:"Dizajn",      godina:2, erasmus:false, interesi:["dizajn","fotografija","ilustracija"], lokacija:{lat:45.8155,lng:15.9820} },
+    { id:3, ime:"Petra Novak",   smjer:"Računarstvo", godina:3, erasmus:false, interesi:["gaming","programiranje","film"], lokacija:{lat:45.8005,lng:15.9710} },
+    { id:4, ime:"Sofia Rossi",   smjer:"Arhitektura", godina:4, erasmus:true,  interesi:["urbani prostori","dizajn","putovanja"], lokacija:{lat:45.8240,lng:16.0010} },
+    { id:5, ime:"Ivan Babić",    smjer:"Ekonomija",   godina:2, erasmus:false, interesi:["košarka","film","glazba"], lokacija:{lat:45.7700,lng:15.9600} },
+    { id:6, ime:"Lana Marić",    smjer:"Dizajn",      godina:3, erasmus:false, interesi:["fotografija","film","urbani prostori"], lokacija:{lat:45.8120,lng:15.9850} },
+    { id:7, ime:"Tomás Silva",   smjer:"Arhitektura", godina:3, erasmus:true,  interesi:["dizajn","fotografija","glazba"], lokacija:{lat:45.8300,lng:16.0200} },
+    { id:8, ime:"Maja Jurić",    smjer:"Psihologija", godina:2, erasmus:false, interesi:["film","kuhanje","planinarenje"], lokacija:{lat:45.8050,lng:15.9650} },
+    { id:9, ime:"Luka Perić",    smjer:"Računarstvo", godina:4, erasmus:false, interesi:["programiranje","gaming","fotografija"], lokacija:{lat:45.8180,lng:15.9760} },
+    { id:10,ime:"Elena Popescu", smjer:"Arhitektura", godina:2, erasmus:true,  interesi:["urbani prostori","dizajn","fotografija","film"], lokacija:{lat:45.8110,lng:15.9790} }
+  ];
+</script>
+
+<script src="T5.js"></script>
+
+<script>
+  const grid = document.getElementById("grid");
+  if (typeof izracunajPreporuke === "undefined") {
+    grid.innerHTML = `<div class="alert"><b>T5.js nije učitan.</b><br/>
+      Provjeri da se datoteka zove točno <code>T5.js</code> i da je u istoj mapi kao T5.html.</div>`;
+  } else {
+    const inicijali = ime => ime.split(" ").map(d => d[0]).slice(0,2).join("");
+    const boja = id => `hsl(${(id*57) % 360} 60% 55%)`;
+    const state = { smjer: "", maxKm: 10, interesi: [] };
+
+    function renderMe() {
+      document.getElementById("meBox").innerHTML = `
+        <div class="ava">${inicijali(currentUser.ime)}</div>
+        <div class="info"><b>${currentUser.ime}</b> ${currentUser.erasmus ? "· Erasmus" : ""}<br/>
+        <span>${currentUser.smjer}, ${currentUser.godina}. godina · interesi: ${currentUser.interesi.join(", ")}</span></div>`;
+    }
+    function renderFilteri() {
+      const smjerovi = [...new Set(students.map(s => s.smjer))].sort();
+      const sel = document.getElementById("smjerSel");
+      smjerovi.forEach(sm => { const o=document.createElement("option"); o.value=sm; o.textContent=sm; sel.appendChild(o); });
+      const box = document.getElementById("interestChips");
+      currentUser.interesi.forEach(i => {
+        const c = document.createElement("button");
+        c.className="chip"; c.textContent=i; c.setAttribute("aria-pressed","false");
+        c.onclick = () => {
+          const on = c.getAttribute("aria-pressed")==="true";
+          c.setAttribute("aria-pressed", String(!on));
+          state.interesi = on ? state.interesi.filter(x=>x!==i) : [...state.interesi, i];
+          render();
+        };
+        box.appendChild(c);
+      });
+    }
+    function render() {
+      const lista = izracunajPreporuke(state);
+      document.getElementById("count").textContent = `Pronađeno ${lista.length} preporuka (sortirano po podudaranju).`;
+      if (!lista.length) { grid.innerHTML = `<p class="empty">Nema studenata koji odgovaraju filterima. Povećaj radijus ili promijeni interese.</p>`; return; }
+      grid.innerHTML = lista.map(r => {
+        const s = r.student; const pct = Math.round(r.match*100);
+        const chips = s.interesi.map(i => `<span class="${r.zajednicki.includes(i)?"hit":""}">${i}</span>`).join("");
+        return `<article class="card">
+          ${s.erasmus ? `<span class="badge">Erasmus</span>` : ""}
+          <div class="top"><div class="ava" style="background:${boja(s.id)}">${inicijali(s.ime)}</div>
+          <div><div class="name">${s.ime}</div><div class="meta">${s.smjer}, ${s.godina}. godina · ${r.dist.toFixed(1)} km</div></div></div>
+          <div class="match"><div class="bar"><i style="width:${pct}%"></i></div><div class="pct">Podudaranje: <b>${pct}%</b></div></div>
+          <div class="shared">${chips}</div>
+          <button class="btn" onclick="alert('Premium funkcija (R008): AI generira temu za razgovor s ${s.ime.split(' ')[0]}.')">Predloži temu</button>
+        </article>`;
+      }).join("");
+    }
+    document.getElementById("smjerSel").onchange = e => { state.smjer = e.target.value; render(); };
+    document.getElementById("distRange").oninput = e => {
+      state.maxKm = +e.target.value; document.getElementById("distOut").textContent = e.target.value; render();
+    };
+    renderMe(); renderFilteri(); render();
+  }
+</script>
+</body>
+</html>
