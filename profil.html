@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linko – Moj profil</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f4f8;
+            padding: 2rem 1rem;
+            min-height: 100vh;
+        }
+
+        .kartica {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 16px rgba(0,0,0,.1);
+            max-width: 520px;
+            margin: 0 auto;
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .nav h1 { color: #1F5C99; font-size: 1.3rem; }
+
+        .nav a {
+            font-size: .875rem;
+            color: #999;
+            text-decoration: none;
+        }
+
+        .nav a:hover { color: #c0392b; }
+
+        /* Foto */
+        .foto-wrap {
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        #foto-preview {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #1F5C99;
+            background: #d6eaf8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.2rem;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        #foto-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .foto-info { flex: 1; }
+
+        .foto-info label {
+            display: block;
+            font-size: .85rem;
+            color: #555;
+            margin-bottom: .4rem;
+        }
+
+        .foto-btn {
+            display: inline-block;
+            padding: .4rem .8rem;
+            background: #f0f4f8;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: .82rem;
+            cursor: pointer;
+            color: #333;
+        }
+
+        .foto-btn:hover { background: #e0e8f0; }
+
+        #foto-input { display: none; }
+
+        /* Forma */
+        label {
+            display: block;
+            font-size: .85rem;
+            color: #555;
+            margin-bottom: .25rem;
+            margin-top: 1rem;
+        }
+
+        input[type="text"], select, textarea {
+            width: 100%;
+            padding: .6rem .8rem;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-family: Arial, sans-serif;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #1F5C99;
+            box-shadow: 0 0 0 2px rgba(31,92,153,.1);
+        }
+
+        textarea { resize: vertical; min-height: 80px; }
+
+        /* Chips za interese */
+        .chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .4rem;
+            margin-top: .5rem;
+        }
+
+        .chip {
+            padding: .3rem .7rem;
+            border: 1.5px solid #ccc;
+            border-radius: 20px;
+            font-size: .82rem;
+            cursor: pointer;
+            color: #555;
+            user-select: none;
+            transition: all .15s;
+        }
+
+        .chip.aktivan {
+            background: #1F5C99;
+            color: #fff;
+            border-color: #1F5C99;
+        }
+
+        /* Gumbi */
+        .gumbi { display: flex; gap: .75rem; margin-top: 1.5rem; }
+
+        .btn {
+            flex: 1;
+            padding: .7rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .btn-primary { background: #1F5C99; color: #fff; }
+        .btn-primary:hover { background: #174d82; }
+        .btn-secondary { background: #f0f4f8; color: #333; border: 1px solid #ccc; }
+        .btn-secondary:hover { background: #e0e8f0; }
+
+        /* Poruke */
+        .poruka {
+            padding: .75rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            font-size: .9rem;
+            display: none;
+        }
+
+        .greska { background: #fde8e8; color: #c0392b; }
+        .uspjeh { background: #e8f8f0; color: #1e8449; }
+
+        /* Erasmus badge */
+        .erasmus-badge {
+            display: inline-block;
+            padding: .2rem .6rem;
+            background: #d6eaf8;
+            color: #1F5C99;
+            border-radius: 12px;
+            font-size: .78rem;
+            font-weight: bold;
+            margin-left: .4rem;
+        }
+
+        /* Karakter brojač za bio */
+        .brojac { font-size: .75rem; color: #aaa; text-align: right; margin-top: .2rem; }
+    </style>
+</head>
+<body>
+<div class="kartica">
+    <div class="nav">
+        <h1>👤 Moj profil</h1>
+        <a href="#" onclick="odjava()">Odjava</a>
+    </div>
+
+    <div id="poruka-greska" class="poruka greska"></div>
+    <div id="poruka-uspjeh" class="poruka uspjeh"></div>
+
+    <!-- Foto -->
+    <div class="foto-wrap">
+        <div id="foto-preview">👤</div>
+        <div class="foto-info">
+            <label id="email-prikaz">—</label>
+            <span class="foto-btn" onclick="document.getElementById('foto-input').click()">
+                📷 Promijeni fotografiju
+            </span>
+            <input type="file" id="foto-input" accept="image/jpeg,image/png,image/webp"
+                   onchange="ucitajFoto(this)">
+            <p style="font-size:.72rem;color:#aaa;margin-top:.3rem">JPG / PNG / WEBP, max 2 MB</p>
+        </div>
+    </div>
+
+    <!-- Ime -->
+    <label for="ime">Ime i prezime *</label>
+    <input type="text" id="ime" placeholder="npr. Lucas Fernández" maxlength="100">
+
+    <!-- Smjer -->
+    <label for="smjer">Studijski smjer *</label>
+    <input type="text" id="smjer" placeholder="npr. Računarstvo, Arhitektura..." maxlength="150">
+
+    <!-- Godina -->
+    <label for="godina">Godina studija *</label>
+    <select id="godina">
+        <option value="">— Odaberi godinu —</option>
+        <option value="1">1. godina</option>
+        <option value="2">2. godina</option>
+        <option value="3">3. godina</option>
+        <option value="4">4. godina</option>
+        <option value="5">5. godina</option>
+        <option value="6">6. godina</option>
+    </select>
+
+    <!-- Interesi -->
+    <label>Interesi</label>
+    <div class="chips" id="chips-wrap"></div>
+
+    <!-- Bio -->
+    <label for="bio">Kratki opis</label>
+    <textarea id="bio" placeholder="Napiši nešto o sebi..." maxlength="300"
+              oninput="document.getElementById('bio-brojac').textContent = this.value.length + '/300'">
+    </textarea>
+    <div class="brojac" id="bio-brojac">0/300</div>
+
+    <!-- Gumbi -->
+    <div class="gumbi">
+        <button class="btn btn-secondary" onclick="odustani()">Odustani</button>
+        <button class="btn btn-primary" id="btn-spremi" onclick="spremiProfil()">Spremi profil</button>
+    </div>
+</div>
+
+<script>
+    const SVI_INTERESI = [
+        'Arhitektura', 'Dizajn', 'Fotografija', 'Glazba', 'Informatika',
+        'Jezici', 'Književnost', 'Plivanje', 'Sport', 'Putovanja',
+        'Filmovi', 'Gaming', 'Kuhanje', 'Planinarenje', 'Yoga'
+    ];
+
+    let odabraniInteresi = [];
+    let fotoBase64 = null;
+
+    // --- Init ---
+    function init() {
+        const prijavljeni = JSON.parse(localStorage.getItem('linko_prijavljeni') || 'null');
+
+        // Prikaz e-maila + Erasmus badge
+        if (prijavljeni) {
+            const badge = prijavljeni.tip === 'erasmus'
+                ? '<span class="erasmus-badge">🌍 Erasmus</span>'
+                : '';
+            document.getElementById('email-prikaz').innerHTML = prijavljeni.email + badge;
+        } else {
+            document.getElementById('email-prikaz').textContent = 'demo@student.tvz.hr';
+        }
+
+        // Renderaj chips
+        const wrap = document.getElementById('chips-wrap');
+        SVI_INTERESI.forEach(interes => {
+            const chip = document.createElement('span');
+            chip.className = 'chip';
+            chip.textContent = interes;
+            chip.onclick = () => toggleInteres(chip, interes);
+            wrap.appendChild(chip);
+        });
+
+        // Učitaj postojeći profil
+        const profil = JSON.parse(localStorage.getItem('linko_profil') || 'null');
+        if (profil) {
+            document.getElementById('ime').value = profil.ime || '';
+            document.getElementById('smjer').value = profil.smjer || '';
+            document.getElementById('godina').value = profil.godina || '';
+            document.getElementById('bio').value = profil.bio || '';
+            document.getElementById('bio-brojac').textContent = (profil.bio || '').length + '/300';
+            document.getElementById('btn-spremi').textContent = 'Spremi promjene';
+
+            // Foto
+            if (profil.foto) {
+                fotoBase64 = profil.foto;
+                prikaziSlikuUPreviewu(profil.foto);
+            }
+
+            // Interesi
+            odabraniInteresi = profil.interesi || [];
+            document.querySelectorAll('.chip').forEach(chip => {
+                if (odabraniInteresi.includes(chip.textContent)) {
+                    chip.classList.add('aktivan');
+                }
+            });
+        }
+    }
+
+    // --- Chips ---
+    function toggleInteres(chip, interes) {
+        if (odabraniInteresi.includes(interes)) {
+            odabraniInteresi = odabraniInteresi.filter(i => i !== interes);
+            chip.classList.remove('aktivan');
+        } else {
+            odabraniInteresi.push(interes);
+            chip.classList.add('aktivan');
+        }
+    }
+
+    // --- Foto upload ---
+    function ucitajFoto(input) {
+        const datoteka = input.files[0];
+        if (!datoteka) return;
+
+        const dozvoljeni = ['image/jpeg', 'image/png', 'image/webp'];
+        if (!dozvoljeni.includes(datoteka.type)) {
+            prikaziGresku('Dozvoljeni formati slike: JPG, PNG, WEBP.'); return;
+        }
+        if (datoteka.size > 2 * 1024 * 1024) {
+            prikaziGresku('Slika ne smije biti veća od 2 MB.'); return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = e => {
+            fotoBase64 = e.target.result;
+            prikaziSlikuUPreviewu(fotoBase64);
+        };
+        reader.readAsDataURL(datoteka);
+    }
+
+    function prikaziSlikuUPreviewu(src) {
+        const preview = document.getElementById('foto-preview');
+        preview.innerHTML = `<img src="${src}" alt="Profilna slika">`;
+    }
+
+    // --- Spremi ---
+    function spremiProfil() {
+        sakriPoruke();
+
+        const ime    = document.getElementById('ime').value.trim();
+        const smjer  = document.getElementById('smjer').value.trim();
+        const godina = document.getElementById('godina').value;
+        const bio    = document.getElementById('bio').value.trim();
+
+        if (!ime)    { prikaziGresku('Ime i prezime su obavezni.'); return; }
+        if (!smjer)  { prikaziGresku('Studijski smjer je obavezan.'); return; }
+        if (!godina) { prikaziGresku('Odaberi godinu studija.'); return; }
+
+        const profil = { ime, smjer, godina, interesi: odabraniInteresi, bio, foto: fotoBase64 };
+        localStorage.setItem('linko_profil', JSON.stringify(profil));
+
+        prikaziUspjeh('✅ Profil je uspješno spremljen!');
+        document.getElementById('btn-spremi').textContent = 'Spremi promjene';
+    }
+
+    // --- Odustani ---
+    function odustani() {
+        const profil = JSON.parse(localStorage.getItem('linko_profil') || 'null');
+        if (profil) {
+            document.getElementById('ime').value = profil.ime || '';
+            document.getElementById('smjer').value = profil.smjer || '';
+            document.getElementById('godina').value = profil.godina || '';
+            document.getElementById('bio').value = profil.bio || '';
+        }
+    }
+
+    // --- Odjava ---
+    function odjava() {
+        localStorage.removeItem('linko_prijavljeni');
+        window.location.href = 'login.html';
+    }
+
+    // --- Poruke ---
+    function prikaziGresku(tekst) {
+        const el = document.getElementById('poruka-greska');
+        el.textContent = tekst;
+        el.style.display = 'block';
+        window.scrollTo(0, 0);
+    }
+
+    function prikaziUspjeh(tekst) {
+        const el = document.getElementById('poruka-uspjeh');
+        el.textContent = tekst;
+        el.style.display = 'block';
+        window.scrollTo(0, 0);
+    }
+
+    function sakriPoruke() {
+        document.getElementById('poruka-greska').style.display = 'none';
+        document.getElementById('poruka-uspjeh').style.display = 'none';
+    }
+
+    init();
+</script>
+</body>
+</html>
